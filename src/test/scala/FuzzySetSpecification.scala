@@ -16,19 +16,21 @@ object FuzzySetSpecification extends Properties("FuzzySet") {
   }
 
   property("contains") = forAll { a: ArbitraryFuzzySet[Int] =>
-    a.fuzzySet.contains(_)
+    a.universe.values.forall(x => a.fuzzySet.contains(x) == x)
   }
 
-  property("union") = forAll { a: ArbitraryFuzzySet[Int] =>
-    a.fuzzySet.union(a.fuzzySet)
+  property("union") = forAll { (a: ArbitraryFuzzySet[Int], b: ArbitraryFuzzySet[Int]) =>
+    val s = a.fuzzySet.union(b.fuzzySet)
+    (a.universe.values ++ b.universe.values).forall(x => a.fuzzySet.contains(x).max(b.fuzzySet.contains(x)) == s.contains(x))
   }
 
-  property("intersect") = forAll { a: ArbitraryFuzzySet[Int] =>
-    a.fuzzySet.intersect(a.fuzzySet)
+  property("intersect") = forAll { (a: ArbitraryFuzzySet[Int], b: ArbitraryFuzzySet[Int]) =>
+    val s = a.fuzzySet.union(b.fuzzySet)
+    (a.universe.values ++ b.universe.values).forall(x => a.fuzzySet.contains(x).min(b.fuzzySet.contains(x)) == s.contains(x))
   }
 
   property("complement") = forAll { a: ArbitraryFuzzySet[Int] =>
-    //a.fuzzySet.complement(a.universe)
+    a.fuzzySet.equalTo(a.fuzzySet.complement(a.universe))(a.universe)
   }
 
 }
