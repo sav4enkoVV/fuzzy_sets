@@ -64,7 +64,7 @@ object ArbitraryFuzzySet {
       }
     }
 
-  implicit def arbitraryNonEmptyFuzzySetMy[T](implicit a: Arbitrary[Universe[T]]): Arbitrary[ArbitraryFuzzyMySet[T]] =
+  implicit def arbitraryNonEmptyFuzzyMySet[T](implicit a: Arbitrary[Universe[T]]): Arbitrary[ArbitraryFuzzyMySet[T]] =
     Arbitrary {
       for {
         universe <- a.arbitrary
