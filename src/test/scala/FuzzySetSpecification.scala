@@ -15,9 +15,10 @@ object FuzzySetSpecification extends Properties("FuzzySet") {
     a.fuzzySet.equalTo(a.fuzzySet)(a.universe)
   }
 
-  property("contains") = forAll { a: ArbitraryFuzzySet[Int] =>
-    a.universe.values.forall(x => a.fuzzySet.contains(x) == x)
+  property("contains") = forAll { a: ArbitraryFuzzyMySet[Int] =>
+    a.universe.values.forall(x => a.fuzzySet.contains(x) == a.mapGrades.getOrElse(x, 0.0))
   }
+
 
   property("union") = forAll { (a: ArbitraryFuzzySet[Int], b: ArbitraryFuzzySet[Int]) =>
     val s = a.fuzzySet.union(b.fuzzySet)
@@ -36,6 +37,7 @@ object FuzzySetSpecification extends Properties("FuzzySet") {
 }
 
 case class ArbitraryFuzzySet[T](fuzzySet: FuzzySet[T], universe: Universe[T])
+case class ArbitraryFuzzyMySet[T](fuzzySet: FuzzySet[T], universe: Universe[T], mapGrades: Map[T, Double])
 
 object ArbitraryFuzzySet {
 
@@ -59,6 +61,24 @@ object ArbitraryFuzzySet {
         })
 
         ArbitraryFuzzySet(fuzzySet, universe)
+      }
+    }
+
+  implicit def arbitraryNonEmptyFuzzySetMy[T](implicit a: Arbitrary[Universe[T]]): Arbitrary[ArbitraryFuzzyMySet[T]] =
+    Arbitrary {
+      for {
+        universe <- a.arbitrary
+        values <- Gen.nonEmptyContainerOf[List, T](Gen.oneOf(universe.values))
+        grades <- Gen.containerOfN[List, Double](values.size, Gen.choose(0.0, 1.0) suchThat (v => v != 0.0))
+      } yield {
+        val fuzzySet = new FuzzySet[T]({ v: T =>
+          val index = values.indexOf(v)
+          if (index < 0) 0.0 else grades(index)
+        })
+
+        val map = values.map( x => (x, grades(values.indexOf(x)))).toMap
+
+        ArbitraryFuzzyMySet(fuzzySet, universe, map)
       }
     }
 }

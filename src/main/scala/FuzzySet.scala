@@ -9,7 +9,7 @@ class FuzzySet[T](m: T => Double) {
     universe.values.forall(m(_) == 0.0)
 
   def equalTo(that: FuzzySet[T])(implicit universe: Universe[T]): Boolean =
-    universe.values.forall(m(_).equals(that.contains(_)))
+    universe.values.forall(a => contains(a) == that.contains(a))
 
   def contains(value: T): Double =
     m(value)
